@@ -1,55 +1,48 @@
 #include "RTClib.h"
 
+// = TTGO ESP32 D1 Mini Pro
+// ! SCL IO22
+// ! SDA IO21
+
 RTC_DS3231 rtc;
 
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-int year, month, day, hour, minute, second;
+char daysOfTheWeek[7][12] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Saturday"};
 
-void setup() {
-    Serial.begin(115200);
+void setup () {
+  Serial.begin(115200);
 
-    if (!rtc.begin()) {
-        Serial.println("Couldn't find RTC");
-        Serial.flush();
-        abort();
-    }
+  if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    Serial.flush();
+    abort();
+  }
 
-    if (rtc.lostPower()) {
-        Serial.println("RTC lost power, let's set the time!");
-        // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-        // July 1, 2020 at 22pm you would call:
-        rtc.adjust(DateTime(2020, 7, 1, 22, 0, 0));
-    }
+  if (rtc.lostPower()) {
+    Serial.println("RTC lost power, let's set the time!");
+    // January 1, 2021 at HH, MM, SS:
+    rtc.adjust(DateTime(2021, 1, 30, 21, 10, 0));
+  }
+  // January 1, 2021 at HH, MM, SS:
+  // rtc.adjust(DateTime(2021, 1, 30, 21, 10, 0));
 }
 
-void loop() {
+void loop () {
     DateTime now = rtc.now();
-    year = now.year();
-    month = now.month();
-    day = now.day();
-    hour = now.hour();
-    minute = now.minute();
-    second = now.second();
 
-    Serial.print(year, DEC);
+    Serial.print(now.year(), DEC);
     Serial.print('/');
-    Serial.print(month, DEC);
+    Serial.print(now.month(), DEC);
     Serial.print('/');
-    Serial.print(day, DEC);
-    Serial.print(" - ");
+    Serial.print(now.day(), DEC);
+    Serial.print(" (");
     Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-    Serial.print(" - ");
-    Serial.print(hour, DEC);
+    Serial.print(") ");
+    Serial.print(now.hour(), DEC);
     Serial.print(':');
-    Serial.print(minute, DEC);
+    Serial.print(now.minute(), DEC);
     Serial.print(':');
-    Serial.print(second, DEC);
+    Serial.print(now.second(), DEC);
     Serial.println();
-
-    Serial.print("Temperature: ");
-    Serial.print(rtc.getTemperature());
-    Serial.println(" C");
-
     Serial.println();
     delay(1000);
 }

@@ -1,12 +1,12 @@
 #include "Button2.h";
 #include "ESPRotary.h";
 
-#define ROTARY_PIN1       25 // DT
-#define ROTARY_PIN2       32 // CLK
-#define BUTTON_PIN        27 // SW
+#define ROTARY_PIN1       26 // CLK
+#define ROTARY_PIN2       18 // DT
+#define BUTTON_PIN        19 // SW
 #define CLICKS_PER_STEP   4  // this number depends on your rotary encoder
 
-ESPRotary r = ESPRotary(ROTARY_PIN1, ROTARY_PIN2, CLICKS_PER_STEP);
+ESPRotary r = ESPRotary(ROTARY_PIN2, ROTARY_PIN1, CLICKS_PER_STEP);
 Button2 b = Button2(BUTTON_PIN);
 
 void setup() {

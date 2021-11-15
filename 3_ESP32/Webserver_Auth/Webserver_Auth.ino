@@ -139,7 +139,7 @@ void profilePage() {
   content += "<body>";
   content += "<h1>Profile</h1>";
   content += "<div class='container'>";
-  content += "<h2>Hello Roger-That</h2>";
+  content += "<h2>Hello " + String(USERNAME) + "</h2>";
   content += "<div class='controller'>";
   content += "<div class='item'>";
   content += "<div>LED Controller</div>";

@@ -106,7 +106,6 @@ Create a new file called `env.h` in the same directory of your main file.
     content += "input {width: 100%; height: 30px; font-size: 15px; padding: 0 10px;}";
     content += "button {padding: 3px 15px; cursor: pointer;}";
     content += "form {width: 300px; border: 1px solid rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 5px; margin: 10px;}";
-    content += "form>div:first-child {background: red; margin-bottom: 30px;}";
     content += "form div:not(:first-child) {margin-top: 5px;}";
     content += ".cta,.input {width: 100%;}";
     content += ".cta button {width: 100%;}";
@@ -116,15 +115,18 @@ Create a new file called `env.h` in the same directory of your main file.
     content += "a {text-decoration: none; text-transform: capitalize; padding: 5px 15px; background-color: hsl(197, 100%, 53%); border-radius: 5px; color: white;}";
     content += "a:hover {background-color: hsl(197, 100%, 40%);}";
     content += "p.error {color: red; padding-top: 5px; text-transform: capitalize;}";
+    content += ".container { width: 100%; min-height: 200px; padding: 20px; display: flex; align-items: center; flex-direction: column; margin-bottom: 5px; }";
     content += "</style></head>";
     content += "<body>";
-    content += "<form>";
     content += "<h1>Login</h1>";
+    content += "<div class='container'>";
+    content += "<form>";
     content += "<div class='input'><input required='true' type='text' name='USERNAME_FORM' placeholder='Username'></div>";
     content += "<div class='input'><input required='true' type='password' name='PASSWORD_FORM' placeholder='Password'></div>";
     content += "<div class='cta'><button type='submit'>Submit</button></div>";
     content += "<p class='error'>" + msg + "</p>";
     content += "</form>";
+    content += "</div>";
     content += buildMenu();
     content += "</body>";
     content += "</html>";
@@ -160,9 +162,11 @@ Create a new file called `env.h` in the same directory of your main file.
     content += ".off { background-color: hsl(358, 100%, 62%); }";
     content += ".off:hover { background-color: hsl(358, 100%, 42%); }";
     content += ".title { margin-right: 10px; }";
+    content += ".container { width: 100%; min-height: 200px; padding: 20px; display: flex; align-items: center; flex-direction: column; margin-bottom: 5px; }";
     content += "</style></head>";
     content += "<body>";
     content += "<h1>Profile</h1>";
+    content += "<div class='container'>";
     content += "<h2>Hello Roger-That</h2>";
     content += "<div class='controller'>";
     content += "<div class='item'>";
@@ -184,6 +188,7 @@ Create a new file called `env.h` in the same directory of your main file.
       }
     }
     content += "</ul>";
+    content += "</div>";
     content += "</div>";
     content += "</div>";
     content += buildMenu();

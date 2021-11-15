@@ -1,4 +1,4 @@
-# Webserver Server No Auth
+# Webserver No Authentication
 
 ## Configuration
 

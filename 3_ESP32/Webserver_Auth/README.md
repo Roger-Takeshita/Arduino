@@ -1,4 +1,4 @@
-# Webserver Server No Auth
+# Webserver Authentication
 
 ## HTML Pages
 

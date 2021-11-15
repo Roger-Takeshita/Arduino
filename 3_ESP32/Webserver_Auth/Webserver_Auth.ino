@@ -7,6 +7,11 @@ String validCookie = COOKIE_BASE + "=" + COOKIE;
 String invalidCookie = COOKIE_BASE + "=0";
 
 WebServer server(80);
+IPAddress local_IP(192, 168, 1, IP);
+IPAddress gateway(192, 168, 1, 255);
+IPAddress subnet(255, 255, 255, 0);
+IPAddress primaryDNS(8, 8, 8, 8);
+IPAddress secondaryDNS(8, 8, 4, 4);
 
 void logout() {
   server.sendHeader("Location", "/");
@@ -236,6 +241,7 @@ void setup() {
   pinMode(0, OUTPUT);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_NAME, WIFI_PASSWORD);
+  WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);

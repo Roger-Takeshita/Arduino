@@ -167,7 +167,7 @@ Create a new file called `env.h` in the same directory of your main file.
     content += "<body>";
     content += "<h1>Profile</h1>";
     content += "<div class='container'>";
-    content += "<h2>Hello Roger-That</h2>";
+    content += "<h2>Hello " + String(USERNAME) + "</h2>";
     content += "<div class='controller'>";
     content += "<div class='item'>";
     content += "<div>LED Controller</div>";

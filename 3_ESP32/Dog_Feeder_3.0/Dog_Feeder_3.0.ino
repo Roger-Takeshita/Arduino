@@ -10,48 +10,75 @@
 #include "env.h";
 
 // Nokia5110 LCD
-int lcdRST     = 27;
-int lcdCE      = 25;
-int lcdDC      = 32;
-int lcdDIN     = 17;
-int lcdCLK     = 16;
-int lcdBL      = 0;
+int8_t LCD_RST_PIN = 27;
+int8_t LCD_CE_PIN  = 25;
+int8_t LCD_DC_PIN  = 32;
+int8_t LCD_DIN_PIN = 17;
+int8_t LCD_CLK_PIN = 16;
+int8_t LCD_BL_PIN  = 0;
 
 // Rotary Encoder
-int rotaryCLK  = 26;
-int rotaryDT   = 18;
-int rotarySW   = 19; // Button
-int rotaryStep = 2;  // This number depends on your rotary encoder
+int8_t ROTARY_CLK_PIN  = 26;
+int8_t ROTARY_DT_PIN   = 18;
+int8_t ROTARY_SW_PIN   = 19; // Button
+int8_t ROTARY_Step_PIN = 2;  // This number depends on your rotary encoder
 
 // RTC - Real Time Clock
-// int RTC_SCL = 22;
-// int RTC_SDA = 12;
+// int8_t RTC_SCL_PIN = 22;
+// int8_t RTC_SDA_PIN = 12;
 
-unsigned long lastTimeClock = millis();
-unsigned long lastTimeOTA = millis();
+// Buttons
+int8_t BTN_1_PIN = 2;
+bool g_btn1Pressed = false;
 
-int updateTime = 1000;   // 1 sec
-int updateOTA  = 600000; // 10 min
+// Strings
+String WIFI_IP="";
 
-bool otaFlag = true;
-int8_t hora, minuto, segundo, dia, mes, ano;
+unsigned long g_lastUpdateClock = millis();
+unsigned long g_lastUpdateOTA   = millis();
+unsigned long g_lastUpdateBtn1  = millis();
 
-ESPRotary r = ESPRotary(rotaryDT, rotaryCLK, rotaryStep);
-Button2 b = Button2(rotarySW);
+int16_t UPDATE_BTN   = 500;    // 0.5 sec
+int16_t UPDATE_CLOCK = 1000;   // 1 sec
+int32_t UPDATE_OTA   = 600000; // 10 min
 
-Adafruit_PCD8544 display = Adafruit_PCD8544(lcdCLK, lcdDIN, lcdDC, lcdCE, lcdRST);
+int8_t g_hour, g_minute, g_second, g_day, g_month, g_year;
+
+ESPRotary r = ESPRotary(ROTARY_DT_PIN, ROTARY_CLK_PIN, ROTARY_Step_PIN);
+Button2 b = Button2(ROTARY_SW_PIN);
+
+Adafruit_PCD8544 display = Adafruit_PCD8544(LCD_CLK_PIN, LCD_DIN_PIN, LCD_DC_PIN, LCD_CE_PIN, LCD_RST_PIN);
 RTC_DS3231 rtc;
-char daysOfTheWeek[7][12] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Saturday"};
+
+void IRAM_ATTR interruptBtn1() {
+  g_btn1Pressed = true;
+}
 
 void setup() {
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_NAME, WIFI_PASSWORD);
 
+  int8_t tries = 1;
+  
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Connection Failed! Rebooting...");
-    delay(5000);
-    ESP.restart();
+    if (tries <= 10) {
+      Serial.print("Tying to connect to the internet... ");
+      Serial.println(tries);
+      delay(2000);
+      tries++;
+    } else {
+      Serial.print("Connection Failed!");
+      break;
+    }
+  }
+
+  if (WiFi.waitForConnectResult() == WL_CONNECTED) {
+    Serial.print("Connected to ");
+    Serial.println(WIFI_NAME);
+    Serial.print("IP address: ");
+    WIFI_IP = WiFi.localIP().toString().c_str();
+    Serial.println(WIFI_IP);
   }
 
   // Hostname
@@ -94,7 +121,7 @@ void setup() {
     });
 
   ArduinoOTA.begin();
-  pinMode(lcdBL, OUTPUT);
+  pinMode(LCD_BL_PIN, OUTPUT);
   backlightOn();
   display.begin();
   display.clearDisplay();
@@ -121,14 +148,13 @@ void setup() {
   // January 1, 2021 at HH, MM, SS:
   // rtc.adjust(DateTime(2021, 1, 30, 21, 10, 0));
 
-  Serial.print("Connected to ");
-  Serial.println(WIFI_NAME);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  pinMode(BTN_1_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(BTN_1_PIN), interruptBtn1, RISING);
 }
 
 void loop() {
   checkOTA();
+  checkBtn1();
   r.loop();
   b.loop();
   updateClock();
@@ -138,11 +164,18 @@ void loop() {
 }
 
 void checkOTA() {
-  if (millis() - lastTimeOTA <= updateOTA) {
+  if (millis() - g_lastUpdateOTA <= UPDATE_OTA) {
     ArduinoOTA.handle();
-  } else if (otaFlag == true) {
-    Serial.print("OTA has been DISABLED!");
-    otaFlag = false;
+  }
+}
+
+void checkBtn1() {
+  if (g_btn1Pressed) {
+    if (millis() - g_lastUpdateBtn1 > UPDATE_BTN) {
+      Serial.println("Button was pressed");
+      g_lastUpdateBtn1 = millis();
+    }
+    g_btn1Pressed = false;
   }
 }
 
@@ -156,31 +189,28 @@ void setContrast() {
 }
 
 void backlightOff() {
-  digitalWrite(lcdBL, LOW);
-  Serial.println(digitalRead(lcdBL));
+  digitalWrite(LCD_BL_PIN, LOW);
 }
 
 void backlightOn() {
-  digitalWrite(lcdBL, HIGH);
-  Serial.println(digitalRead(lcdBL));
+  digitalWrite(LCD_BL_PIN, HIGH);
 }
 
 void rotate(ESPRotary& r) { Serial.println(r.getPosition()); }
 
-// +on left or right rotation
+// + On left or right rotation
 void showDirection(ESPRotary& r) { Serial.println(r.directionToString(r.getDirection())); }
 
-// +single click+
+// + Single click+
 void click(Button2& btn) {
-  Serial.println("Click!");
-  if (digitalRead(lcdBL)) {
+  if (digitalRead(LCD_BL_PIN)) {
     backlightOff();
   } else {
     backlightOn();
   }
 }
 
-// +long click
+// + Long press click
 void resetPosition(Button2& btn) {
   r.resetPosition();
   resetDefaults();
@@ -193,20 +223,20 @@ void printHeader() {
   display.setTextColor(BLACK, WHITE);
   display.setCursor(0, 0);
   display.setCursor(18, 0);
-  if (hora < 10) {
+  if (g_hour < 10) {
     display.print(0);
   }
-  display.print(hora);
+  display.print(g_hour);
   display.print(":");
-  if (minuto < 10) {
+  if (g_minute < 10) {
     display.print(0);
   }
-  display.print(minuto);
+  display.print(g_minute);
   display.print(":");
-  if (segundo < 10) {
+  if (g_second < 10) {
     display.print(0);
   }
-  display.print(segundo);
+  display.print(g_second);
   display.drawFastHLine(0, 10, 83, BLACK);
 }
 
@@ -225,14 +255,14 @@ void printEncoder() {
 }
 
 void updateClock() {
-  if (millis() - lastTimeClock > updateTime) {
+  if (millis() - g_lastUpdateClock > UPDATE_CLOCK) {
     DateTime now = rtc.now();
-    hora = now.hour();
-    minuto = now.minute();
-    segundo = now.second();
-    dia = now.day();
-    mes = now.month();
-    ano = now.year();
-    lastTimeClock = millis();
+    g_hour = now.hour();
+    g_minute = now.minute();
+    g_second = now.second();
+    g_day = now.day();
+    g_month = now.month();
+    g_year = now.year();
+    g_lastUpdateClock = millis();
   }
 }
